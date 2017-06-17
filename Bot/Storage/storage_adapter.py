@@ -25,23 +25,17 @@ class StorageAdapter(object):
         Create a storage-aware statement.
         """
 
-        if 'DJANGO_SETTINGS_MODULE' in os.environ:
-            django_project = __import__(os.environ['DJANGO_SETTINGS_MODULE'])
-            if django_project.settings.CHATTERBOT['use_django_models'] is True:
-                from chatterbot.ext.django_chatterbot.models import Statement
-                return Statement
-
         statement = Request
         statement.storage = self
         return statement
 
-    def generate_base_query(self, chatterbot, session_id):
+    def generate_base_query(self, bot, session_id):
         """
         Create a base query for the storage adapter.
         """
         if self.adapter_supports_queries:
-            for filter_instance in chatterbot.filters:
-                self.base_query = filter_instance.filter_selection(chatterbot, session_id)
+            for filter_instance in bot.filters:
+                self.base_query = filter_instance.filter_selection(bot, session_id)
 
     def count(self):
         """

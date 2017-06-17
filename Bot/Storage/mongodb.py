@@ -38,20 +38,20 @@ class Query(object):
     def statement_response_list_contains(self, statement_text):
         query = self.query.copy()
 
-        if 'in_response_to' not in query:
-            query['in_response_to'] = {}
+        if 'in_translate_to' not in query:
+            query['in_translate_to'] = {}
 
-        if '$elemMatch' not in query['in_response_to']:
-            query['in_response_to']['$elemMatch'] = {}
+        if '$elemMatch' not in query['in_translate_to']:
+            query['in_translate_to']['$elemMatch'] = {}
 
-        query['in_response_to']['$elemMatch']['text'] = statement_text
+        query['in_translate_to']['$elemMatch']['text'] = statement_text
 
         return Query(query)
 
     def statement_response_list_equals(self, response_list):
         query = self.query.copy()
 
-        query['in_response_to'] = response_list
+        query['in_translate_to'] = response_list
 
         return Query(query)
 
@@ -106,6 +106,7 @@ class MongoDatabase(StorageAdapter):
     def find(self, statement_text):
         query = self.base_query.statement_text_equals(statement_text)
 
+        #checking if the textis present in the DB
         values = self.statements.find_one(query.value())
 
         if not values:
@@ -114,8 +115,8 @@ class MongoDatabase(StorageAdapter):
         del values['text']
 
         # Build the objects for the response list
-        values['in_response_to'] = self.deserialize_responses(
-            values.get('in_response_to', [])
+        values['in_translate_to'] = self.deserialize_responses(
+            values.get('in_translate_to', [])
         )
 
         return self.Statement(statement_text, **values)
@@ -145,8 +146,8 @@ class MongoDatabase(StorageAdapter):
         statement_text = statement_data['text']
         del statement_data['text']
 
-        statement_data['in_response_to'] = self.deserialize_responses(
-            statement_data.get('in_response_to', [])
+        statement_data['in_translate_to'] = self.deserialize_responses(
+            statement_data.get('in_translate_to', [])
         )
 
         return self.Statement(statement_text, **statement_data)
@@ -159,12 +160,12 @@ class MongoDatabase(StorageAdapter):
         statement_text = statement_data['text']
         del statement_data['text']
 
-        statement_data['in_response_to'] = self.deserialize_responses(
-            statement_data.get('in_response_to', [])
+        statement_data['in_translate_to'] = self.deserialize_responses(
+            statement_data.get('in_translate_to', [])
         )
-        if statement_data['image'] and not statement_data['image'].isspace():
-            statement_img = statement_data['image']
-            print(statement_img)
+        #if statement_data['image'] and not statement_data['image'].isspace():
+            #statement_img = statement_data['image']
+            #print(statement_img)
 
         return self.Statement(statement_text, **statement_data)
 
@@ -182,13 +183,13 @@ class MongoDatabase(StorageAdapter):
 
 
         # Convert Response objects to data
-        if 'in_response_to' in kwargs:
+        if 'in_translate_to' in kwargs:
             serialized_responses = []
-            for response in kwargs['in_response_to']:
+            for response in kwargs['in_translate_to']:
                 serialized_responses.append({'text': response})
 
             query = query.statement_response_list_equals(serialized_responses)
-            del kwargs['in_response_to']
+            del kwargs['in_translate_to']
 
         if 'in_response_to__contains' in kwargs:
             query = query.statement_response_list_contains(
@@ -234,7 +235,7 @@ class MongoDatabase(StorageAdapter):
         operations.append(update_operation)
 
         # Make sure that an entry for each response is saved
-        for response_dict in data.get('in_response_to', []):
+        for response_dict in data.get('in_translate_to', []):
             response_text = response_dict.get('text')
 
             # $setOnInsert does nothing if the document is not created
@@ -289,17 +290,20 @@ class MongoDatabase(StorageAdapter):
         in_response_to field. Otherwise, the logic adapter may find a closest
         matching statement that does not have a known response.
         """
-        response_query = self.statements.distinct('in_response_to.text')
+        response_query = self.statements.distinct('in_translate_to.text')
 
+        #you get only values
         _statement_query = {
             'text': {
                 '$in': response_query
             }
         }
 
+
         _statement_query.update(self.base_query.value())
 
         statement_query = self.statements.find(_statement_query)
+        #you get the whole text
 
         statement_objects = []
 

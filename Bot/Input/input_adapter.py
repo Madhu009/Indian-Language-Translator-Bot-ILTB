@@ -20,9 +20,10 @@ class InputAdapter(Adapter):
         Return an existing statement object (if one exists).
         """
         input_statement = self.process_input(*args, **kwargs)
+
         self.logger.info('Recieved input statement: {}'.format(input_statement.text))
 
-        existing_statement = self.chatbot.storage.find(input_statement.text)
+        existing_statement = self.bot.storage.find(input_statement.text) #none or known
 
         if existing_statement:
             self.logger.info('"{}" is a known statement'.format(input_statement.text))

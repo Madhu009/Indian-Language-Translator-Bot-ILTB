@@ -18,7 +18,7 @@ class NoKnowledgeAdapter(LogicAdapter):
         Otherwise, a confidence of 0 should be returned.
         """
 
-        if self.chatbot.storage.count():
+        if self.bot.storage.count():
             statement.confidence = 0
         else:
             statement.confidence = 1

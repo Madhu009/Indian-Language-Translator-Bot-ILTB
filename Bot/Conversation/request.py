@@ -20,7 +20,7 @@ class Request(object):
             #self.image=''
 
         self.text = text
-        self.in_response_to = kwargs.pop('in_response_to', [])
+        self.in_response_to = kwargs.pop('in_translate_to', [])
 
         # The date and time that this statement was created at
         self.created_at = kwargs.pop('created_at', datetime.now())
@@ -140,12 +140,12 @@ class Request(object):
         data = {}
 
         data['text'] = self.text
-        data['in_response_to'] = []
+        data['in_translate_to'] = []
         data['created_at'] = self.created_at
         data['extra_data'] = self.extra_data
 
         for response in self.in_response_to:
-            data['in_response_to'].append(response.serialize())
+            data['in_translate_to'].append(response.serialize())
 
         return data
 
