@@ -1,6 +1,5 @@
 import os
 
-
 class Corpus(object):
 
     def __init__(self):
@@ -72,5 +71,25 @@ class Corpus(object):
 
             for key in list(corpus.keys()):
                 corpora.append(corpus[key])
+            print(corpus.items())
+
+            # code for reading the
+            for k in list(corpus.keys()):
+                templist=[]
+                for l in corpus[k]:
+                    li=l.copy()
+                    temp=li[0]
+                    li[0]=li[1]
+                    li[1]=temp
+                    templist.append(li)
+
+
+                a={k:templist}
+                data=dict(a)
+                print(data.items())
+
+            for key in list(data.keys()):
+                corpora.append(data[key])
+
 
         return corpora
