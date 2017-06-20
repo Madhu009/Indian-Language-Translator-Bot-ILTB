@@ -95,7 +95,7 @@ class MongoDatabase(StorageAdapter):
 
         # The mongo collection of statement documents
         self.statements = self.database['statements']
-        print(self.statements)
+        #print(self.statements)
         # Set a requirement for the text attribute to be unique
         self.statements.create_index('text', unique=True)
 
@@ -198,7 +198,7 @@ class MongoDatabase(StorageAdapter):
             del kwargs['in_response_to__contains']
 
         query = query.raw(kwargs)
-        print(query.value())
+        #print(query.value())
         matches = self.statements.find(query.value())
 
         if order_by:
@@ -214,7 +214,7 @@ class MongoDatabase(StorageAdapter):
         results = []
 
         for match in list(matches):
-            print(match)
+            #print(match)
             results.append(self.mongo_to_object_match(match))
 
         return results
