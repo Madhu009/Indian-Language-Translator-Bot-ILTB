@@ -81,10 +81,13 @@ class MongoDatabase(StorageAdapter):
         from pymongo import MongoClient
         self.i=0
         self.database_name = self.kwargs.get(
-            'database', 'ILTB-database'
+            'database', 'botdb'
+        )
+        self.database_uri_old = self.kwargs.get(
+            'database_uri_old', 'mongodb://localhost:27017/'
         )
         self.database_uri = self.kwargs.get(
-            'database_uri', 'mongodb://localhost:27017/'
+            'database_uri', 'mongodb://iltbot:iltbot@ds149132.mlab.com:49132/botdb'
         )
 
         # Use the default host and port
