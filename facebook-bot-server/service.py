@@ -1,10 +1,17 @@
 import requests
-from flask import Flask,request
+from flask import Flask, render_template,request
 import json
+from botinitializer import BotInitializer
+from trainers import BotCorpusTrainer
+from PreProcessing import InputPreProcessor
+app = Flask(__name__)
 
-app=Flask(__name__)
+bot = BotInitializer("English Bot")
+bot.set_trainer(BotCorpusTrainer)
+bot.train("bot.corpus.punjabi")
 
-PAT="EAAYX07LLHJwBAEFmDTAZBVPh7XSkJ4mB5xGfIUfX73DIYJ0FLLyfFR3opTWZAnEOEt4wBlRebt6yLgzcIrd635CrUTwXW4POXoa7GmG0pHjwoQZAuD3pRpZBNzL5c5orZAolZBfrO7fEYQ1RaMYrktZAEyZB50yAiKD9jYE4uT03nwZDZD"
+
+PAT="EAAYX07LLHJwBAMwzWwfrVZCDw2VP6AfH13zreLfiqMLOle5dq9fXkzsHZBiy7vZAthB2MNuy2VsoI0rKqQP1UQoF2HMLOpNTFC5YSHKqKZBrolkxzASjsgh9dGQP03HZBajskfJEgjZCGsBstDhAzLIEM8bOaKHMzxXLpoPB4j9QZDZD"
 
 
 @app.route("/",methods=['POST'])
@@ -14,8 +21,17 @@ def get_response():
 
     for sender, message in messaging_events(req):
         print("Incoming from {}: {}".format(sender, message))
-        send_message(PAT, sender, message)
-    return "ok"
+
+        response, cofidence = bot.get_response(message.decode('unicode_escape'))
+        response = str(response)
+        print(response)
+
+        '''if message=="GrmEQkfhEgZCeZ":
+            send_error_message(PAT, sender, "error.. Try again!")
+        else:
+            send_message(PAT, sender, message)'''
+
+    return response
 
 
 @app.route('/', methods=['GET'])
@@ -36,7 +52,8 @@ def messaging_events(req):
             and "attachments" not in event["message"] and "sticker_id" not in event["message"]:
       yield event["sender"]["id"], event["message"]["text"].encode('unicode_escape')
     else:
-      yield event["sender"]["id"], "I can't echo this"
+      yield event["sender"]["id"], "GrmEQkfhEgZCeZ"
+
 
 
 def send_message(token, recipient, text):
@@ -48,6 +65,20 @@ def send_message(token, recipient, text):
     data=json.dumps({
       "recipient": {"id": recipient},
       "message": {"text": text.decode('unicode_escape')}
+    }),
+    headers={'Content-type': 'application/json'})
+  if r.status_code != requests.codes.ok:
+    print(r.text)
+
+def send_error_message(token, recipient, text):
+  """Send the message text to recipient with id recipient.
+  """
+
+  r = requests.post("https://graph.facebook.com/v2.6/me/messages",
+    params={"access_token": token},
+    data=json.dumps({
+      "recipient": {"id": recipient},
+      "message": {"text": text}
     }),
     headers={'Content-type': 'application/json'})
   if r.status_code != requests.codes.ok:
